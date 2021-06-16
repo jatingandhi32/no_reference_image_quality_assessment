@@ -10,32 +10,33 @@ from blurQuality import totalVariation,digModifiedLaplacian,svd
 
 
 def check_directory_exists(path):
-    if os.path.exists(path):
-        shutil.rmtree(path)
+	if os.path.exists(path):
+		shutil.rmtree(path)
+
 
 def saveImagesToDirectory(currentDirectoryPath, targetDirectoryPath, images):
 	os.chdir(targetDirectoryPath)
 	for imageName in images:
-		imagePath = currentDirectoryPath[:len(currentDirectoryPath)] + imageName
+		imagePath = currentDirectoryPath[:len(currentDirectoryPath)-1] + imageName 
 		image = cv2.imread(imagePath)
 		cv2.imwrite(imageName,image)
-	
+
 
 def load_img(path_to_img):
-    max_dim = 512
-    img = tf.io.read_file(path_to_img)
-    img = tf.image.decode_image(img, channels=3)
-    img = tf.image.convert_image_dtype(img, tf.float32)
+	max_dim = 512
+	img = tf.io.read_file(path_to_img)
+	img = tf.image.decode_image(img, channels=3)
+	img = tf.image.convert_image_dtype(img, tf.float32)
 
-    shape = tf.cast(tf.shape(img)[:-1], tf.float32)
-    long_dim = max(shape)
-    scale = max_dim / long_dim
+	shape = tf.cast(tf.shape(img)[:-1], tf.float32)
+	long_dim = max(shape)
+	scale = max_dim / long_dim
 
-    new_shape = tf.cast(shape * scale, tf.int32)
+	new_shape = tf.cast(shape * scale, tf.int32)
 
-    img = tf.image.resize(img, new_shape)
-    img = img[tf.newaxis, :]
-    return img
+	img = tf.image.resize(img, new_shape)
+	img = img[tf.newaxis, :]
+	return img
 
 '''
 DML : blurness inc - value dec 
@@ -102,14 +103,18 @@ def classifyImages(imageDirectory):
 	
 	return goodImages, badImages, imageSuggestedForDeletion
 
+
 def main():
-	# YOU NEED TO CHANGE THESE PATHS ACCORDING TO YOUR SYSTEM
+
+	# Path of images(directory) you want to classify
+	IMAGE_DIRECTORY = r'E:\Images\imagesToClassify\*'
+
+	# Path of three different folders where images are stored after classifying
 	GOOD_IMAGES_PATH = r'E:\Images\Results\goodImages'
 	BAD_IMAGES_PATH = r'E:\Images\Results\badImages'
 	IMAGE_SUGGESTED_FOR_DELETION_PATH = r'E:\Images\Results\imageSuggestedForDeletion'
-	imageDirectory =r'E:\Images\imagesToClassify\*'
 
-	goodImages, badImages, imageSuggestedForDelettion = classifyImages(imageDirectory)
+	goodImages, badImages, imageSuggestedForDeletion = classifyImages(IMAGE_DIRECTORY)
 
 	check_directory_exists(GOOD_IMAGES_PATH)
 	check_directory_exists(BAD_IMAGES_PATH)
@@ -119,9 +124,9 @@ def main():
 	os.mkdir(BAD_IMAGES_PATH)
 	os.mkdir(IMAGE_SUGGESTED_FOR_DELETION_PATH)
 
-	saveImagesToDirectory(imageDirectory,GOOD_IMAGES_PATH,goodImages)
-	saveImagesToDirectory(imageDirectory,BAD_IMAGES_PATH,badImages)
-	saveImagesToDirectory(imageDirectory,IMAGE_SUGGESTED_FOR_DELETION_PATH,imageSuggestedForDelettion)
+	saveImagesToDirectory(IMAGE_DIRECTORY,GOOD_IMAGES_PATH,goodImages)
+	saveImagesToDirectory(IMAGE_DIRECTORY,BAD_IMAGES_PATH,badImages)
+	saveImagesToDirectory(IMAGE_DIRECTORY,IMAGE_SUGGESTED_FOR_DELETION_PATH,imageSuggestedForDeletion)
 
 
 main()
